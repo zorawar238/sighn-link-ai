@@ -2,277 +2,260 @@ import streamlit as st
 import numpy as np
 import mediapipe as mp
 import tensorflow as tf
-import threading
+from PIL import Image
 import os
-import sys
-import av
-from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
+import time
 
-# ── Page config ───────────────────────────────────────────────────────────────
+# ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Sign Link AI",
     page_icon="🤟",
     layout="centered",
 )
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
+# ── Styling ────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-
 * { font-family: 'Inter', sans-serif; }
-
-.main { background: #0a0a1a; }
 
 .hero {
     background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
     border-radius: 16px;
     padding: 30px;
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
-.hero h1 { color: #ffd700; font-size: 2.4rem; font-weight: 800; margin:0; }
-.hero p  { color: #a0b8d8; font-size: 1rem; margin-top: 8px; }
+.hero h1 { color: #ffd700; font-size: 2.2rem; font-weight: 800; margin: 0; }
+.hero p  { color: #a0b8d8; font-size: 1rem; margin-top: 8px; margin-bottom: 0; }
 
 .result-box {
     background: linear-gradient(135deg, #1a1a2e, #0f3460);
     border: 2px solid #ffd700;
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 14px;
+    padding: 24px;
     text-align: center;
     margin: 16px 0;
 }
-.result-word { color: #ffd700; font-size: 2.8rem; font-weight: 800; }
-.result-conf { color: #a0c0e8; font-size: 1rem; margin-top: 4px; }
+.result-word { color: #ffd700; font-size: 3rem; font-weight: 800; }
+.result-conf { color: #a0c0e8; font-size: 0.95rem; margin-top: 6px; }
+
+.waiting-box {
+    background: #0f1a2e;
+    border: 2px dashed #2a4060;
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    margin: 16px 0;
+    color: #4a6080;
+    font-size: 1.1rem;
+}
 
 .gesture-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    display: flex;
     gap: 8px;
-    margin: 16px 0;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 14px 0;
 }
-.gesture-chip {
+.gchip {
     background: #1a1a2e;
-    border: 1px solid #0f3460;
-    border-radius: 8px;
-    padding: 10px 4px;
+    border: 1px solid #2a3a5e;
+    border-radius: 10px;
+    padding: 10px 14px;
     text-align: center;
-    font-size: 0.75rem;
     color: #a0b8d8;
+    font-size: 0.8rem;
+    min-width: 80px;
 }
-.gesture-chip span { display: block; font-size: 1.4rem; }
+.gchip span { display: block; font-size: 1.5rem; margin-bottom: 3px; }
 
-.tip-box {
-    background: #0f2040;
+.tip {
+    background: #0a1628;
     border-left: 4px solid #ffd700;
     border-radius: 0 8px 8px 0;
-    padding: 12px 16px;
-    color: #c0d8f0;
-    font-size: 0.9rem;
-    margin: 12px 0;
+    padding: 10px 14px;
+    color: #a0b8d8;
+    font-size: 0.88rem;
+    margin: 10px 0;
+}
+
+.prob-bar-wrap { margin: 4px 0; }
+.prob-label { color: #a0b8d8; font-size: 0.85rem; margin-bottom: 2px; }
+
+div[data-testid="stButton"] button {
+    background: linear-gradient(90deg, #1a1a2e, #0f3460) !important;
+    color: #ffd700 !important;
+    border: 1px solid #ffd700 !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    padding: 10px 24px !important;
+    width: 100% !important;
+}
+div[data-testid="stButton"] button:hover {
+    background: #ffd700 !important;
+    color: #1a1a2e !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Constants ─────────────────────────────────────────────────────────────────
-GESTURES    = ["hello", "yes", "no", "thank_you", "i_love_you"]
-EMOJI       = {"hello":"🤚", "yes":"👍", "no":"👉", "thank_you":"🙏", "i_love_you":"🤟"}
-SEQUENCE_LEN = 30
-FEATURES     = 252
-CONFIDENCE_THRESHOLD = 0.40
-MODEL_PATH   = os.path.join(os.path.dirname(__file__), "..", "models", "isl_lstm_model.keras")
+# ── Constants ──────────────────────────────────────────────────────────────────
+GESTURES  = ["hello", "yes", "no", "thank_you", "i_love_you"]
+EMOJI     = {"hello":"🤚","yes":"👍","no":"👉","thank_you":"🙏","i_love_you":"🤟"}
+INSTRUCTIONS = {
+    "hello":     "Salute → sweep hand outward",
+    "yes":       "Thumbs-up → nod up and down",
+    "no":        "Index finger → wag side to side",
+    "thank_you": "Flat hand at chin → push forward",
+    "i_love_you":"Thumb + index + pinky → hold still",
+}
+SEQ_LEN   = 30
+THRESHOLD = 0.40
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "isl_lstm_model.keras")
 
-# ── Load model (cached) ───────────────────────────────────────────────────────
+# ── Load model ─────────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_model():
-    try:
-        return tf.keras.models.load_model(os.path.abspath(MODEL_PATH))
-    except Exception as e:
-        st.error(f"Model not found: {e}")
+    path = os.path.abspath(MODEL_PATH)
+    if not os.path.exists(path):
         return None
+    return tf.keras.models.load_model(path)
+
+@st.cache_resource
+def load_hands():
+    mp_hands = mp.solutions.hands
+    return mp_hands.Hands(
+        static_image_mode=True,
+        max_num_hands=2,
+        min_detection_confidence=0.5,
+        model_complexity=0,
+    )
 
 model = load_model()
+hands = load_hands()
+mp_drawing = mp.solutions.drawing_utils
 
-# ── MediaPipe setup ───────────────────────────────────────────────────────────
-mp_hands    = mp.solutions.hands
-mp_drawing  = mp.solutions.drawing_utils
-mp_styles   = mp.solutions.drawing_styles
-
-# ── Helper: extract landmarks ─────────────────────────────────────────────────
-def extract_landmarks(image_rgb, hands_detector):
-    result = hands_detector.process(image_rgb)
+# ── Helpers ────────────────────────────────────────────────────────────────────
+def extract_landmarks(img_array):
+    rgb = img_array[:, :, :3]
+    result = hands.process(rgb)
     frame  = np.zeros(126)
+    found  = False
     if result.multi_hand_landmarks:
-        for i, hand_lm in enumerate(result.multi_hand_landmarks[:2]):
+        found = True
+        for i, lm in enumerate(result.multi_hand_landmarks[:2]):
             base = i * 63
-            for j, lm in enumerate(hand_lm.landmark):
-                frame[base + j*3:base + j*3+3] = [lm.x, lm.y, lm.z]
-    return frame, result
+            for j, pt in enumerate(lm.landmark):
+                frame[base + j*3 : base + j*3+3] = [pt.x, pt.y, pt.z]
+    return frame, found
 
-# ── Helper: normalize sequence ────────────────────────────────────────────────
-def normalize_sequence(seq):
-    arr    = np.array(seq)
+def normalize_seq(seq):
+    arr    = np.array(seq, dtype=np.float32)
     origin = arr[0, :3].copy()
     arr[:, 0::3] -= origin[0]
     arr[:, 1::3] -= origin[1]
     arr[:, 2::3] -= origin[2]
-    scale  = np.linalg.norm(arr[0, 3:6]) + 1e-6
+    scale  = max(np.linalg.norm(arr[0, 3:6]), 1e-6)
     arr   /= scale
     return arr
 
-# ── Helper: build velocity ────────────────────────────────────────────────────
 def build_features(positions):
-    pos      = np.array(positions)
-    vel      = np.zeros_like(pos)
-    vel[1:]  = pos[1:] - pos[:-1]
+    pos     = np.array(positions, dtype=np.float32)
+    vel     = np.zeros_like(pos)
+    vel[1:] = pos[1:] - pos[:-1]
     return np.concatenate([pos, vel], axis=1)
 
-# ── Video processor for WebRTC ────────────────────────────────────────────────
-class GestureProcessor(VideoProcessorBase):
-    def __init__(self):
-        self.hands       = mp_hands.Hands(
-            max_num_hands=2,
-            min_detection_confidence=0.6,
-            min_tracking_confidence=0.5,
-            model_complexity=0,
-        )
-        self.sequence    = []
-        self.result_text = ""
-        self.confidence  = 0.0
-        self.cooldown    = 0
-        self.consensus   = []
-        self.lock        = threading.Lock()
+def predict_gesture(img_array):
+    lm, found = extract_landmarks(img_array)
+    if not found:
+        return None, 0.0, None
 
-    def recv(self, frame):
-        img_bgr = frame.to_ndarray(format="bgr24")
-        img_rgb = img_bgr[:, :, ::-1]  # BGR → RGB
-
-        landmarks, detection = extract_landmarks(img_rgb, self.hands)
-
-        # Draw hand landmarks
-        if detection.multi_hand_landmarks:
-            for hand_lm in detection.multi_hand_landmarks:
-                mp_drawing.draw_landmarks(
-                    img_bgr, hand_lm,
-                    mp_hands.HAND_CONNECTIONS,
-                    mp_styles.get_default_hand_landmarks_style(),
-                    mp_styles.get_default_hand_connections_style(),
-                )
-
-        # Accumulate sequence
-        if np.any(landmarks):
-            self.sequence.append(landmarks)
-        else:
-            self.sequence = []
-
-        self.sequence = self.sequence[-SEQUENCE_LEN:]
-
-        # Predict when buffer full
-        if len(self.sequence) == SEQUENCE_LEN and model is not None:
-            try:
-                norm = normalize_sequence(self.sequence)
-                feat = build_features(norm)
-                inp  = np.expand_dims(feat, axis=0).astype(np.float32)
-                pred = model.predict(inp, verbose=0)[0]
-                conf = float(np.max(pred))
-                idx  = int(np.argmax(pred))
-
-                if conf >= CONFIDENCE_THRESHOLD:
-                    gesture = GESTURES[idx]
-                    self.consensus.append(gesture)
-                    self.consensus = self.consensus[-5:]
-
-                    if self.consensus.count(gesture) >= 3 and self.cooldown == 0:
-                        with self.lock:
-                            self.result_text = gesture
-                            self.confidence  = conf
-                            self.cooldown    = 20
-                else:
-                    self.consensus = []
-
-            except Exception:
-                pass
-
-        if self.cooldown > 0:
-            self.cooldown -= 1
-
-        return av.VideoFrame.from_ndarray(img_bgr, format="bgr24")
-
-# ── RTC config (STUN servers) ─────────────────────────────────────────────────
-RTC_CONFIG = RTCConfiguration({
-    "iceServers": [
-        {"urls": ["stun:stun.l.google.com:19302"]},
-        {"urls": ["stun:stun1.l.google.com:19302"]},
-    ]
-})
+    # Build 30-frame sequence from single capture
+    # (static shape works perfectly; motion gestures predict by shape)
+    seq = [lm] * SEQ_LEN
+    norm = normalize_seq(seq)
+    feat = build_features(norm)
+    inp  = np.expand_dims(feat, 0).astype(np.float32)
+    pred = model.predict(inp, verbose=0)[0]
+    idx  = int(np.argmax(pred))
+    conf = float(pred[idx])
+    return GESTURES[idx] if conf >= THRESHOLD else None, conf, pred
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  UI
+# UI
 # ══════════════════════════════════════════════════════════════════════════════
 
 st.markdown("""
 <div class="hero">
   <h1>🤟 Sign Link AI</h1>
-  <p>Real-Time Indian Sign Language Translator · No hardware needed</p>
+  <p>Indian Sign Language Translator &nbsp;·&nbsp; Real-Time AI &nbsp;·&nbsp; No hardware needed</p>
 </div>
 """, unsafe_allow_html=True)
 
-# Gesture chips
+if model is None:
+    st.error("⚠️ Model file not found. Please check `models/isl_lstm_model.keras` is in the repo.")
+    st.stop()
+
+# Gesture reference
 st.markdown("""
 <div class="gesture-grid">
-  <div class="gesture-chip"><span>🤚</span>Hello</div>
-  <div class="gesture-chip"><span>👍</span>Yes</div>
-  <div class="gesture-chip"><span>👉</span>No</div>
-  <div class="gesture-chip"><span>🙏</span>Thank You</div>
-  <div class="gesture-chip"><span>🤟</span>I Love You</div>
+  <div class="gchip"><span>🤚</span>Hello</div>
+  <div class="gchip"><span>👍</span>Yes</div>
+  <div class="gchip"><span>👉</span>No</div>
+  <div class="gchip"><span>🙏</span>Thank You</div>
+  <div class="gchip"><span>🤟</span>I Love You</div>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="tip-box">
-  💡 Allow camera access when prompted · Hold gesture clearly for 1–2 seconds
-</div>
-""", unsafe_allow_html=True)
+st.markdown('<div class="tip">💡 <b>How to use:</b> Click <b>"Take Photo"</b> below → show your hand gesture clearly → click the shutter → see the result instantly!</div>', unsafe_allow_html=True)
 
-# Result placeholder
-result_placeholder = st.empty()
+# Camera input
+img_file = st.camera_input("📷 Show your gesture here", label_visibility="collapsed")
 
-# WebRTC streamer
-ctx = webrtc_streamer(
-    key="sign-link-ai",
-    video_processor_factory=GestureProcessor,
-    rtc_configuration=RTC_CONFIG,
-    media_stream_constraints={"video": True, "audio": False},
-    async_processing=True,
-)
+if img_file is not None:
+    img = Image.open(img_file).convert("RGB")
+    img_array = np.array(img)
 
-# Show live result
-if ctx.video_processor:
-    with ctx.video_processor.lock:
-        gesture = ctx.video_processor.result_text
-        conf    = ctx.video_processor.confidence
+    with st.spinner("🧠 Analysing gesture..."):
+        gesture, conf, probs = predict_gesture(img_array)
 
     if gesture:
-        emoji = EMOJI.get(gesture, "🤟")
+        emoji = EMOJI[gesture]
         label = gesture.replace("_", " ").title()
-        result_placeholder.markdown(f"""
+        instr = INSTRUCTIONS[gesture]
+        st.markdown(f"""
         <div class="result-box">
           <div class="result-word">{emoji} {label}</div>
-          <div class="result-conf">Confidence: {conf*100:.1f}%</div>
+          <div class="result-conf">Confidence: {conf*100:.1f}% &nbsp;·&nbsp; {instr}</div>
         </div>
         """, unsafe_allow_html=True)
+
+        # Probability bars
+        st.markdown("**All gesture probabilities:**")
+        for i, g in enumerate(GESTURES):
+            p = float(probs[i]) * 100
+            em = EMOJI[g]
+            lbl = g.replace("_", " ").title()
+            st.markdown(f"<div class='prob-label'>{em} {lbl}</div>", unsafe_allow_html=True)
+            st.progress(min(p / 100, 1.0))
     else:
-        result_placeholder.markdown("""
-        <div class="result-box">
-          <div class="result-word" style="color:#4a6080;">Waiting for gesture...</div>
-          <div class="result-conf">Show your hand clearly in the camera</div>
+        st.markdown("""
+        <div class="waiting-box">
+          🖐️ No hand detected or confidence too low<br>
+          <small>Make sure your hand is clearly visible and well-lit</small>
         </div>
         """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <div class="waiting-box">
+      📷 Click the camera above to take a photo of your gesture
+    </div>
+    """, unsafe_allow_html=True)
 
 st.divider()
 st.markdown("""
-<p style="text-align:center; color:#4a6080; font-size:0.85rem;">
-  Sign Link AI · Built with MediaPipe + LSTM · 
-  <a href="https://github.com/zorawar238/sighn-link-ai" style="color:#ffd700;">GitHub</a>
+<p style="text-align:center; color:#4a6080; font-size:0.82rem;">
+Sign Link AI &nbsp;·&nbsp; Built with MediaPipe + LSTM &nbsp;·&nbsp;
+<a href="https://github.com/zorawar238/sighn-link-ai" style="color:#ffd700; text-decoration:none;">⭐ GitHub</a>
 </p>
 """, unsafe_allow_html=True)
