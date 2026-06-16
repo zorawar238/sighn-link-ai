@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ISL Translator AI - Presentation Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 11pt;
+    color: #1a1a2e;
+    background: #fff;
+    line-height: 1.6;
+  }
+
+  /* ── PAGE BREAK ─────────────────── */
+  .page-break { page-break-before: always; }
+
+  /* ── COVER PAGE ──────────────────── */
+  .cover {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+  }
+  .cover-badge {
+    background: rgba(255,220,50,0.15);
+    border: 2px solid #ffd700;
+    color: #ffd700;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 10pt;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+  .cover h1 {
+    font-size: 42pt;
+    font-weight: 800;
+    color: #ffd700;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .cover h2 {
+    font-size: 16pt;
+    font-weight: 300;
+    color: #a8c8ff;
+    margin-bottom: 8px;
+  }
+  .cover p {
+    font-size: 11pt;
+    color: #7090c0;
+    margin-bottom: 50px;
+  }
+  .cover-gestures {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 50px;
+  }
+  .gesture-chip {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px 18px;
+    border-radius: 25px;
+    font-size: 10pt;
+    font-weight: 500;
+  }
+  .cover-footer {
+    color: #4a6080;
+    font-size: 9pt;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 20px;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ── CONTENT PAGES ───────────────── */
+  .content { padding: 40px 50px; }
+  
+  .page-header {
+    background: linear-gradient(90deg, #1a1a2e, #0f3460);
+    color: white;
+    padding: 12px 50px;
+    font-size: 10pt;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  h2.section {
+    font-size: 16pt;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(90deg, #1a1a2e, #0f3460);
+    padding: 10px 16px;
+    border-radius: 6px;
+    margin: 24px 0 12px 0;
+  }
+
+  h3.sub {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #0f3460;
+    margin: 14px 0 6px 0;
+    padding-left: 10px;
+    border-left: 3px solid #ffd700;
+  }
+
+  p { margin-bottom: 8px; color: #2a2a3e; }
+
+  ul { margin: 6px 0 10px 20px; }
+  ul li { margin-bottom: 4px; color: #2a2a3e; }
+
+  /* ── ARCH DIAGRAM ────────────────── */
+  .arch-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 16px auto;
+    max-width: 420px;
+  }
+  .arch-box {
+    background: linear-gradient(135deg, #1a1a2e, #0f3460);
+    color: white;
+    padding: 10px 30px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 10pt;
+    width: 100%;
+    position: relative;
+  }
+  .arch-box small { font-weight: 300; font-size: 8.5pt; color: #a0b8d8; display: block; }
+  .arch-arrow {
+    color: #ffd700;
+    font-size: 18pt;
+    line-height: 1;
+    margin: 2px 0;
+  }
+
+  /* ── TECH TABLE ──────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 10pt;
+  }
+  th {
+    background: #1a1a2e;
+    color: #ffd700;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+  td { padding: 7px 12px; border-bottom: 1px solid #e8e8f0; }
+  tr:nth-child(even) td { background: #f4f6ff; }
+
+  /* ── INFO BOX ────────────────────── */
+  .info-box {
+    background: #f0f4ff;
+    border-left: 4px solid #0f3460;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+  }
+  .warning-box {
+    background: #fffbf0;
+    border-left: 4px solid #ffd700;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+  }
+
+  /* ── MODEL ARCH ──────────────────── */
+  .model-layer {
+    display: flex;
+    align-items: center;
+    margin: 4px 0;
+    gap: 10px;
+  }
+  .layer-box {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 9.5pt;
+    font-weight: 600;
+    min-width: 180px;
+    text-align: center;
+  }
+  .lstm-layer { background: #1a1a2e; color: #ffd700; }
+  .drop-layer { background: #e8e8f0; color: #555; }
+  .dense-layer { background: #0f3460; color: white; }
+  .out-layer { background: #ffd700; color: #1a1a2e; }
+  .layer-desc { font-size: 9pt; color: #555; }
+
+  /* ── Q&A ─────────────────────────── */
+  .qa-section { margin: 20px 0; }
+  .qa-category {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #ffd700;
+    background: #1a1a2e;
+    padding: 6px 14px;
+    border-radius: 4px;
+    margin: 16px 0 10px 0;
+    display: inline-block;
+  }
+  .qa-item {
+    margin: 10px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .qa-q {
+    background: linear-gradient(90deg, #0f3460, #1a1a2e);
+    color: white;
+    padding: 9px 14px;
+    font-weight: 600;
+    font-size: 10pt;
+  }
+  .qa-q::before { content: "Q  "; color: #ffd700; font-weight: 800; }
+  .qa-a {
+    background: #f8f9ff;
+    padding: 9px 14px;
+    font-size: 10pt;
+    color: #2a2a3e;
+    line-height: 1.55;
+  }
+  .qa-a::before { content: "A  "; color: #0f3460; font-weight: 700; }
+
+  /* ── QUICK REF ───────────────────── */
+  .quick-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 14px 0;
+  }
+  .quick-card {
+    background: linear-gradient(135deg, #1a1a2e, #0f3460);
+    color: white;
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .quick-card h4 { color: #ffd700; margin-bottom: 8px; font-size: 10pt; }
+  .quick-card li { font-size: 9pt; margin-bottom: 4px; color: #c0d8f0; }
+
+  .highlight-bar {
+    background: #ffd700;
+    color: #1a1a2e;
+    font-weight: 700;
+    font-size: 12pt;
+    padding: 14px 20px;
+    border-radius: 8px;
+    text-align: center;
+    margin: 20px 0;
+  }
+
+  /* ── PIPELINE STEPS ──────────────── */
+  .pipeline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .pipeline-step {
+    background: #f4f6ff;
+    border: 1px solid #d0d8f0;
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .pipeline-step h4 {
+    color: #0f3460;
+    font-size: 10pt;
+    margin-bottom: 4px;
+  }
+  .pipeline-step p { font-size: 9pt; color: #444; margin: 0; }
+  .step-num {
+    background: #1a1a2e;
+    color: #ffd700;
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9pt;
+    font-weight: 700;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     COVER PAGE
+════════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-badge">Presentation &amp; Viva Guide</div>
+  <h1>ISL Translator AI</h1>
+  <h2>Indian Sign Language Real-Time Gesture Recognition</h2>
+  <p>Deep Learning · MediaPipe · LSTM · Streamlit</p>
+
+  <div class="cover-gestures">
+    <div class="gesture-chip">🤚 Hello</div>
+    <div class="gesture-chip">👍 Yes</div>
+    <div class="gesture-chip">👉 No</div>
+    <div class="gesture-chip">🙏 Thank You</div>
+    <div class="gesture-chip">🤟 I Love You</div>
+  </div>
+
+  <div class="cover-footer">
+    Recognises 5 ISL gestures &nbsp;·&nbsp; Real-time webcam inference &nbsp;·&nbsp; No internet required
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 1 — OVERVIEW & ARCHITECTURE
+════════════════════════════════════════════════════════════════ -->
+<div class="page-break"></div>
+<div class="page-header">ISL Translator AI — Project Overview & Architecture</div>
+<div class="content">
+
+  <h2 class="section">1. What Is This Project?</h2>
+  <p>A <strong>real-time Indian Sign Language (ISL) Translator</strong> that uses a standard laptop webcam to detect hand gestures and translates them into text instantly using a deep learning model — with no special hardware, no internet, and no external devices.</p>
+  <div class="info-box">
+    <strong>Currently recognises:</strong> Hello &nbsp;·&nbsp; Yes &nbsp;·&nbsp; No &nbsp;·&nbsp; Thank You &nbsp;·&nbsp; I Love You<br>
+    <strong>Purpose:</strong> Bridge communication between deaf/mute individuals and the general public using AI.
+  </div>
+
+  <h2 class="section">2. System Architecture</h2>
+  <div class="arch-flow">
+    <div class="arch-box">📷 Webcam<small>Live camera feed</small></div>
+    <div class="arch-arrow">▼</div>
+    <div class="arch-box">✋ MediaPipe<small>21 hand landmarks → 126 values/frame</small></div>
+    <div class="arch-arrow">▼</div>
+    <div class="arch-box">📊 Preprocessing<small>Normalize + Add Velocity → (30 × 252)</small></div>
+    <div class="arch-arrow">▼</div>
+    <div class="arch-box">🧠 LSTM Neural Network<small>Trained on YOUR real gestures</small></div>
+    <div class="arch-arrow">▼</div>
+    <div class="arch-box">🌐 Streamlit Web App<small>Displays prediction + confidence</small></div>
+  </div>
+
+  <h2 class="section">3. Tech Stack</h2>
+  <table>
+    <tr><th>Technology</th><th>Role</th><th>Why Chosen</th></tr>
+    <tr><td><strong>Python</strong></td><td>Core language</td><td>Rich ML ecosystem</td></tr>
+    <tr><td><strong>MediaPipe (Google)</strong></td><td>Hand landmark detection</td><td>Fast, accurate, CPU-only, free</td></tr>
+    <tr><td><strong>TensorFlow / Keras</strong></td><td>Build &amp; train LSTM model</td><td>Industry standard for deep learning</td></tr>
+    <tr><td><strong>OpenCV</strong></td><td>Read webcam frames</td><td>Standard computer vision library</td></tr>
+    <tr><td><strong>NumPy</strong></td><td>Numerical data processing</td><td>Fast array operations</td></tr>
+    <tr><td><strong>Streamlit</strong></td><td>Web UI &amp; live inference</td><td>Python-native, quick to build</td></tr>
+  </table>
+
+  <h2 class="section">4. MediaPipe — Hand Detection</h2>
+  <p>MediaPipe detects <strong>21 landmark points</strong> per hand (wrist, knuckles, fingertips). Each landmark has <strong>3 values</strong>: X (left-right), Y (up-down), Z (depth).</p>
+  <div class="info-box">
+    <strong>21 landmarks × 3 coordinates × 2 hands = 126 numbers per frame</strong><br><br>
+    <strong>Key point:</strong> MediaPipe does NOT understand gestures — it only provides raw coordinates. The AI model learns what those coordinates mean.
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 2 — LSTM & FEATURES
+════════════════════════════════════════════════════════════════ -->
+<div class="page-break"></div>
+<div class="page-header">ISL Translator AI — LSTM Model & Input Features</div>
+<div class="content">
+
+  <h2 class="section">5. LSTM Neural Network — The AI Brain</h2>
+  <h3 class="sub">What is LSTM?</h3>
+  <p><strong>Long Short-Term Memory</strong> — a type of neural network designed for sequences over time (video, speech). Unlike a CNN (which sees one image), LSTM sees <strong>30 frames together</strong> and learns motion patterns: the nod in "Yes", the wave in "Hello", the wag in "No".</p>
+
+  <h3 class="sub">Model Architecture</h3>
+  <div style="margin:10px 0;">
+    <div class="model-layer">
+      <div class="layer-box lstm-layer">Input (30 × 252)</div>
+      <div class="layer-desc">30 frames, 252 features each</div>
+    </div>
+    <div class="model-layer">
+      <div class="layer-box lstm-layer">LSTM — 64 units</div>
+      <div class="layer-desc">Learns low-level temporal patterns</div>
+    </div>
+    <div class="model-layer">
+      <div class="layer-box drop-layer">Dropout 30%</div>
+      <div class="layer-desc">Prevents overfitting</div>
+    </div>
+    <div class="model-layer">
+      <div class="layer-box lstm-layer">LSTM — 64 units</div>
+      <div class="layer-desc">Learns gesture-level patterns</div>
+    </div>
+    <div class="model-layer">
+      <div class="layer-box drop-layer">Dropout 30%</div>
+      <div class="layer-desc">Prevents overfitting</div>
+    </div>
+    <div class="model-layer">
+      <div class="layer-box dense-layer">Dense — 128 neurons (ReLU)</div>
+      <div class="layer-desc">Feature compression + BatchNorm</div>
+    </div>
+    <div class="model-layer">
+      <div class="layer-box out-layer">Output — 5 neurons (Softmax)</div>
+      <div class="layer-desc">Probability per gesture (Hello, Yes, No, Thank You, I Love You)</div>
+    </div>
+  </div>
+  <div class="warning-box"><strong>Why 30 frames?</strong> At ~30 fps, 30 frames = 1 second of video — enough to capture one complete gesture motion.</div>
+
+  <h2 class="section">6. Input Features — Position + Velocity (252 total)</h2>
+  <table>
+    <tr><th>Feature Type</th><th>Values</th><th>What it captures</th></tr>
+    <tr><td><strong>Position</strong></td><td>126 per frame</td><td>Where each joint is (21 landmarks × 3 axes × 2 hands)</td></tr>
+    <tr><td><strong>Velocity</strong></td><td>126 per frame</td><td>How fast each joint is moving (position[t] − position[t−1])</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>252 per frame</strong></td><td>Complete spatial + temporal information</td></tr>
+  </table>
+  <div class="info-box">
+    <strong>Why add velocity?</strong><br>
+    • Static gestures (I Love You) → velocity ≈ 0 across all frames<br>
+    • Motion gestures (Yes, No, Hello) → velocity spikes during movement<br>
+    → Makes motion patterns explicit, helping the LSTM even with limited training data
+  </div>
+
+  <h2 class="section">7. Data Normalization</h2>
+  <p><strong>Problem:</strong> Holding your hand near vs. far from the camera gives completely different raw coordinates for the same gesture.</p>
+  <p><strong>Solution — 2 steps:</strong></p>
+  <ul>
+    <li><strong>Step 1 (Translation invariance):</strong> Subtract wrist position at frame 0 from all frames</li>
+    <li><strong>Step 2 (Scale invariance):</strong> Divide by wrist-to-knuckle distance at frame 0</li>
+  </ul>
+  <div class="info-box"><strong>Result:</strong> The model sees the gesture identically whether your hand is close or far, left or right of the camera frame.</div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 3 — PIPELINE & DESIGN
+════════════════════════════════════════════════════════════════ -->
+<div class="page-break"></div>
+<div class="page-header">ISL Translator AI — Pipeline, Design Decisions & Inference</div>
+<div class="content">
+
+  <h2 class="section">8. Training Pipeline</h2>
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <h4><span class="step-num">1</span>collect_real_data.py</h4>
+      <p>Opens webcam, shows countdown + gesture name, records 30 frames/sequence, saves as .npy files to AppData\Local\isl_gesture_data\</p>
+    </div>
+    <div class="pipeline-step">
+      <h4><span class="step-num">2</span>preprocess.py</h4>
+      <p>Loads frames, builds sequences, normalizes (translation + scale), adds velocity features, saves X_train/X_test (90/10 split)</p>
+    </div>
+    <div class="pipeline-step">
+      <h4><span class="step-num">3</span>train_model.py</h4>
+      <p>Builds LSTM, trains with EarlyStopping + ReduceLROnPlateau callbacks, saves model to models/isl_lstm_model.keras</p>
+    </div>
+    <div class="pipeline-step">
+      <h4><span class="step-num">4</span>streamlit_main.py</h4>
+      <p>Live inference loop: webcam → MediaPipe → normalize → velocity → LSTM → consensus filter → display text</p>
+    </div>
+  </div>
+
+  <h2 class="section">9. Real-Time Inference</h2>
+  <ul>
+    <li>Webcam captures frames at ~30 fps</li>
+    <li>MediaPipe extracts 126 landmark values per frame</li>
+    <li>Frame added to a <strong>rolling 30-frame buffer</strong></li>
+    <li>Buffer normalized + velocity added → (30, 252) array</li>
+    <li>Fed to LSTM → outputs 5 probabilities</li>
+    <li><strong>Consensus filter:</strong> must predict same gesture across multiple frames + confidence &gt; 40%</li>
+    <li>Result displayed with cooldown to prevent spam</li>
+  </ul>
+  <div class="warning-box"><strong>Latency:</strong> ~1–2 seconds from gesture start to text display (30-frame buffer fill time)</div>
+
+  <h2 class="section">10. Key Design Decisions</h2>
+  <table>
+    <tr><th>Decision</th><th>Reason</th></tr>
+    <tr><td><strong>LSTM over CNN</strong></td><td>Gestures are temporal (motion over time), not static images</td></tr>
+    <tr><td><strong>Real data over synthetic</strong></td><td>Synthetic data (94% test accuracy) failed in real use — too perfect</td></tr>
+    <tr><td><strong>Velocity features added</strong></td><td>Makes motion explicit; improves learning with limited data</td></tr>
+    <tr><td><strong>AppData\Local for storage</strong></td><td>OneDrive kept deleting .npy files during cloud sync</td></tr>
+    <tr><td><strong>40% confidence threshold</strong></td><td>Balances responsiveness vs. false positive predictions</td></tr>
+    <tr><td><strong>Consensus-based prediction</strong></td><td>Prevents flickering from single-frame mistakes</td></tr>
+    <tr><td><strong>Simplified 2-layer LSTM</strong></td><td>Smaller model generalizes better with limited (~5 seqs/gesture) data</td></tr>
+  </table>
+
+  <h2 class="section">11. Current Results</h2>
+  <table>
+    <tr><th>Metric</th><th>Value</th><th>Note</th></tr>
+    <tr><td>Test Accuracy</td><td><strong>73.33%</strong></td><td>With ~5 sequences/gesture</td></tr>
+    <tr><td>Training Accuracy</td><td>~97%</td><td>Shows overfitting due to small dataset</td></tr>
+    <tr><td>Gesture Classes</td><td>5</td><td>Hello, Yes, No, Thank You, I Love You</td></tr>
+    <tr><td>Input Shape</td><td>(1, 30, 252)</td><td>1 sample × 30 frames × 252 features</td></tr>
+    <tr><td>Inference Speed</td><td>~5–10 ms/frame</td><td>LSTM prediction only</td></tr>
+    <tr><td>Expected (30 seqs)</td><td>~90%+</td><td>With more training data</td></tr>
+  </table>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 4 — VIVA Q&A (PART 1)
+════════════════════════════════════════════════════════════════ -->
+<div class="page-break"></div>
+<div class="page-header">ISL Translator AI — Viva Questions & Model Answers (Part 1)</div>
+<div class="content">
+  <h2 class="section">Viva / Interview Questions & Model Answers</h2>
+
+  <div class="qa-section">
+    <div class="qa-category">🔵 BASIC QUESTIONS</div>
+
+    <div class="qa-item">
+      <div class="qa-q">What is this project about?</div>
+      <div class="qa-a">A real-time Indian Sign Language translator. It uses a laptop webcam to detect hand gestures and converts them to text using an LSTM deep learning model. The goal is to help deaf/mute individuals communicate with the general public using just a laptop — no special hardware needed.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Why did you choose ISL?</div>
+      <div class="qa-a">ISL is used by approximately 5 million deaf people in India but is poorly supported by technology compared to ASL. There is a significant need for accessible, low-cost translation tools in the Indian context.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Do you need any special hardware?</div>
+      <div class="qa-a">No. Just a standard laptop webcam. No gloves, motion sensors, or external devices. This makes the system very accessible and low-cost — anyone with a laptop can use it.</div>
+    </div>
+
+    <div class="qa-category">🟡 TECHNICAL QUESTIONS</div>
+
+    <div class="qa-item">
+      <div class="qa-q">What is MediaPipe and why did you use it?</div>
+      <div class="qa-a">MediaPipe is Google's open-source real-time perception framework. It detects 21 hand landmarks per hand very efficiently on CPU. We use it because it is accurate, runs in real time without a GPU, is free, and abstracts away the hard problem of hand detection — so our model only needs to focus on gesture classification.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">What is an LSTM and why choose it over CNN?</div>
+      <div class="qa-a">LSTM (Long Short-Term Memory) is a recurrent neural network designed to learn patterns in sequences over time. A CNN would only see one image at a time and would miss motion completely. LSTM receives 30 frames as a sequence and learns the full movement pattern — like the nod in "Yes", the wave in "Hello", or the sideways wag in "No". Gestures are inherently temporal, so LSTM is the right choice.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">What is the input to your model?</div>
+      <div class="qa-a">A tensor of shape (1, 30, 252) — 1 sample, 30 frames, 252 features per frame. The 252 = 126 position values (21 landmarks × 3 axes × 2 hands) + 126 velocity values (frame-to-frame differences). This gives the model both spatial shape AND motion information.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">What are velocity features and why did you add them?</div>
+      <div class="qa-a">Velocity = how much each joint moved between consecutive frames: velocity[t] = position[t] − position[t−1]. For static gestures like "I Love You", velocity is near zero. For motion gestures like "Yes" (nod) or "No" (wag), velocity spikes sharply during the movement. Adding velocity makes motion patterns explicit in the data, helping the LSTM learn the difference between static shapes and dynamic motions even with limited training samples.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">How does normalization work?</div>
+      <div class="qa-a">We normalize each 30-frame sequence in 2 steps: First, subtract the wrist position from frame 0 from all subsequent frames — this makes coordinates relative to where the gesture started (translation invariance). Second, divide by the wrist-to-middle-knuckle distance — this makes the representation scale-invariant, so the gesture looks identical whether your hand is near or far from the camera.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">What is the model accuracy and why isn't it higher?</div>
+      <div class="qa-a">73.33% on the test set. The main limitation is training data — we have only ~5 sequences per gesture. Three reasons accuracy isn't higher: (1) Very few training examples, (2) Real-world variation in lighting, hand angle, and speed, (3) Some gestures have partially overlapping hand shapes. With 30+ sequences per gesture, accuracy reaches 85–90%+.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 5 — VIVA Q&A (PART 2)
+════════════════════════════════════════════════════════════════ -->
+<div class="page-break"></div>
+<div class="page-header">ISL Translator AI — Viva Questions & Model Answers (Part 2)</div>
+<div class="content">
+  <div class="qa-section">
+
+    <div class="qa-category">🟠 DATA & TRAINING QUESTIONS</div>
+
+    <div class="qa-item">
+      <div class="qa-q">What is Dropout and why do you use it?</div>
+      <div class="qa-a">Dropout randomly disables 30% of neurons during each training step. This forces the network to learn redundant representations instead of relying on specific neurons. It is a regularization technique that significantly reduces overfitting — especially important when training data is small.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">What are EarlyStopping and ReduceLROnPlateau?</div>
+      <div class="qa-a">EarlyStopping monitors validation loss — if it doesn't improve for 20 epochs, training stops automatically (restoring best weights). This prevents overfitting. ReduceLROnPlateau halves the learning rate when validation loss plateaus, allowing finer weight adjustments. Both are standard callbacks for stable, efficient training.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">How was training data collected?</div>
+      <div class="qa-a">We built a custom data collection script (collect_real_data.py) that opens the webcam, shows a countdown + gesture name and instructions on screen, then records 30 frames per sequence. Each frame's 126 landmarks are saved as a .npy file. Data is stored in AppData\Local (not OneDrive) because OneDrive was deleting the files during cloud sync.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Why did you use real data instead of synthetic (generated) data?</div>
+      <div class="qa-a">Initially we used mathematically generated synthetic data, which gave 94% accuracy in testing. But it performed very poorly in real use because synthetic data is too "perfect" — it doesn't capture natural variation in hand position, lighting, camera angle, or individual hand sizes. Even with fewer samples, real webcam data produces a model that actually works in practice.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">What is One-Hot Encoding?</div>
+      <div class="qa-a">Converting class labels into binary vectors for the neural network. For 5 gestures: "hello" → [1,0,0,0,0], "yes" → [0,1,0,0,0], etc. Required for categorical crossentropy loss — the model outputs 5 probabilities and we compare them to these target vectors.</div>
+    </div>
+
+    <div class="qa-category">🔴 CHALLENGES & IMPROVEMENTS</div>
+
+    <div class="qa-item">
+      <div class="qa-q">What were the main challenges in building this?</div>
+      <div class="qa-a">(1) OneDrive deleting training .npy files during sync — solved by storing data in AppData\Local. (2) Model learning only static shapes, not motion — solved by adding velocity features. (3) Synthetic data failing in real-world use — solved by collecting actual webcam data. (4) Windows console crashing on emoji characters in print statements — fixed with ASCII-only output.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">What is overfitting? Did your model overfit?</div>
+      <div class="qa-a">Overfitting is when a model memorizes training data instead of learning generalizable patterns — it performs well on training data but poorly on unseen data. Yes, our model shows overfitting: training accuracy ~97% vs validation accuracy ~73%. This is caused by having very few training samples (~5 per gesture). The primary solution is to collect more real data.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">How would you improve this project?</div>
+      <div class="qa-a">(1) Collect 30+ sequences per gesture for significantly higher accuracy. (2) Add data augmentation (flip, rotate, scale) to multiply training samples. (3) Use a Transformer architecture instead of LSTM for better temporal learning. (4) Expand to full ISL alphabet (A–Z). (5) Add text-to-speech output. (6) Train on multiple people's data to reduce personal bias.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">Can this work for ASL or British Sign Language?</div>
+      <div class="qa-a">Yes! The architecture is completely language-agnostic. Just update the gesture list in config.py, run RECORD_GESTURES.bat to collect new data, and retrain. The LSTM, MediaPipe pipeline, and preprocessing all work identically for any sign language.</div>
+    </div>
+
+    <div class="qa-item">
+      <div class="qa-q">What ethical considerations apply?</div>
+      <div class="qa-a">(1) Privacy: all processing is local — no data sent to servers. (2) Accessibility: designed to empower the deaf/mute community. (3) Bias: model trained on one person's gestures may not generalize to different hand sizes or skin tones — a production system needs diverse training data. (4) Accuracy limitations: at 73%, this is a proof-of-concept; critical communication tools need higher reliability.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 6 — QUICK REFERENCE
+════════════════════════════════════════════════════════════════ -->
+<div class="page-break"></div>
+<div class="page-header">ISL Translator AI — Quick Reference Card</div>
+<div class="content">
+  <h2 class="section">Quick Reference Card</h2>
+
+  <h3 class="sub">One-Line Description</h3>
+  <div class="info-box" style="font-style:italic; font-size:11pt;">
+    "A real-time ISL gesture recognition system that uses MediaPipe to extract hand landmarks and an LSTM neural network to classify gestures from a 1-second video sequence — running entirely on a laptop webcam with no internet."
+  </div>
+
+  <div class="quick-grid">
+    <div class="quick-card">
+      <h4>5 Core Concepts</h4>
+      <ul>
+        <li>MediaPipe → 21 landmarks → 126 numbers/frame</li>
+        <li>LSTM → 30 frames → learns motion over time</li>
+        <li>Velocity = position[t] − position[t−1]</li>
+        <li>Normalization → subtract wrist → divide by scale</li>
+        <li>Real data > Synthetic for actual performance</li>
+      </ul>
+    </div>
+    <div class="quick-card">
+      <h4>Key Numbers</h4>
+      <ul>
+        <li>21 landmarks per hand</li>
+        <li>126 raw features per frame</li>
+        <li>252 model features (+ velocity)</li>
+        <li>30 frames per sequence (1 second)</li>
+        <li>5 gesture classes</li>
+        <li>73.33% current accuracy</li>
+      </ul>
+    </div>
+    <div class="quick-card">
+      <h4>Impressive Facts</h4>
+      <ul>
+        <li>Fully local — no internet needed</li>
+        <li>Custom pipeline built from scratch</li>
+        <li>Velocity insight → motion detection works</li>
+        <li>Adding gestures = zero code changes</li>
+        <li>Learned real vs synthetic through testing</li>
+      </ul>
+    </div>
+    <div class="quick-card">
+      <h4>Design Choices</h4>
+      <ul>
+        <li>LSTM not CNN → temporal data</li>
+        <li>Velocity features → explicit motion</li>
+        <li>AppData\Local → avoid OneDrive</li>
+        <li>40% threshold → responsive inference</li>
+        <li>Consensus filter → no flickering</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="sub">File Structure</h3>
+  <div class="info-box" style="font-family: monospace; font-size: 9.5pt; line-height: 1.8;">
+    isl-translator-ai/<br>
+    ├── config.py &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ← All settings (gestures, camera, model params)<br>
+    ├── app/hand_tracker.py &nbsp;&nbsp;&nbsp;&nbsp; ← MediaPipe wrapper (extracts landmarks)<br>
+    ├── scripts/<br>
+    │&nbsp;&nbsp; ├── collect_real_data.py ← Records gestures via webcam<br>
+    │&nbsp;&nbsp; ├── preprocess.py &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ← Builds dataset from recordings<br>
+    │&nbsp;&nbsp; └── train_model.py &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ← Trains the LSTM model<br>
+    ├── streamlit_app/streamlit_main.py ← Web UI + live inference<br>
+    ├── models/isl_lstm_model.keras &nbsp;&nbsp;&nbsp; ← Trained model file<br>
+    └── RECORD_GESTURES.bat &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ← Double-click to record gestures
+  </div>
+
+  <div class="highlight-bar">
+    ⭐ Pro Tip: Start your presentation with a LIVE DEMO — it always impresses the audience!
+  </div>
+
+  <h3 class="sub">The Story Arc for Your Presentation</h3>
+  <ul>
+    <li><strong>Problem:</strong> 5 million deaf/mute people in India with no real-time translation tool</li>
+    <li><strong>Solution:</strong> AI-powered ISL translator using only a laptop webcam</li>
+    <li><strong>How it works:</strong> MediaPipe → 126 landmarks → LSTM → text in real time</li>
+    <li><strong>Key insight:</strong> Velocity features solved the static-vs-motion problem with limited data</li>
+    <li><strong>Results:</strong> 73.33% accuracy, fully working live demo, scalable to more gestures</li>
+    <li><strong>Future:</strong> More data → 90%+ accuracy, full ISL alphabet, text-to-speech</li>
+  </ul>
+
+</div>
+
+</body>
+</html>

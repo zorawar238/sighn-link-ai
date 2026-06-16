@@ -1,0 +1,29 @@
+# ==============================================================================
+# REQUIREMENTS - Indian Sign Language Translator AI
+# ==============================================================================
+# This file lists all the external libraries (dependencies) that our Python project
+# requires. We install these in a virtual environment to prevent package version
+# conflicts with other projects on your machine.
+
+# OpenCV: Used to access your webcam, read video streams, and process image frames.
+opencv-python
+
+# MediaPipe: A high-performance ML library by Google. We use it to detect hands
+# and extract the 3D coordinates (landmarks) of 21 points on each hand.
+mediapipe
+
+# TensorFlow: The deep learning framework we will use to build, train, and run
+# our LSTM (Long Short-Term Memory) neural network.
+tensorflow
+
+# NumPy: A fundamental package for scientific computing in Python. It handles
+# large multi-dimensional arrays (like our gesture data points) efficiently.
+numpy
+
+# pyttsx3: A text-to-speech conversion library that works offline and supports
+# multiple voices/accents on Windows, macOS, and Linux.
+pyttsx3
+
+# Streamlit: A framework that lets us build beautiful, interactive web apps 
+# for machine learning and data science projects using pure Python.
+streamlit
